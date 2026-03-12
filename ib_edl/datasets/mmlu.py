@@ -5,7 +5,7 @@ from transformers import PreTrainedTokenizer
 
 from .builder import DATASETS
 from .classification import ClassificationDataset
-from .dataset_utils import qa_dataset_collate_fn
+from .dataset_utils import qa_dataset_collate_fn, add_index_to_dataset
 
 
 @DATASETS.register_module()
@@ -50,6 +50,7 @@ class MMLUDataset(ClassificationDataset):
             data_set = concatenate_datasets(data_set_list)
         else:
             data_set = load_dataset('cais/mmlu', task, **dataset_cfg)
+            data_set = add_index_to_dataset(data_set)
         if subset_size is not None:
             data_set = data_set.select(range(subset_size))
         data_set.set_format('torch')
@@ -79,3 +80,6 @@ class MMLUDataset(ClassificationDataset):
 
     def get_collate_fn(self) -> Callable:
         return qa_dataset_collate_fn
+    
+    def get_data_indices(self):
+        return add_index_to_dataset(self.dataset)

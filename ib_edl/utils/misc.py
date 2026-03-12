@@ -31,10 +31,14 @@ def get_subset_indices(subset_cfg: Dict[str, Any]) -> np.ndarray:
         raise ValueError(f'Invalid selection type: {selection_type}')
 
 
-def save_predictions(
-        preds: PredictionOutput, file_path: Union[str, PathLike[str]], logger: Optional[logging.Logger] = None) -> None:
+def save_predictions(preds: PredictionOutput, file_path: Union[str, PathLike[str]], seed: int, data_idx, input_text, logger: Optional[logging.Logger] = None) -> None:
     if osp.dirname(file_path) != '':
         mmengine.mkdir_or_exist(osp.dirname(file_path))
+
+    if osp.exists(file_path):
+        existing_dict = dict(np.load(file_path, allow_pickle = True))
+    else:
+        existing_dict = {}
 
     if isinstance(preds.predictions, tuple):
         # PredictionOutput.predictions can be a tuple of (logits, uncertainties)
@@ -42,9 +46,12 @@ def save_predictions(
     else:
         logits, uncertainties = preds.predictions, None
 
-    save_dict = {'logits': logits.astype(np.float16), 'labels': preds.label_ids}
+    save_dict = {str(seed) : {'idx': np.array(data_idx).astype(np.int32), 'input': np.array(input_text), \
+                 'logits': logits.astype(np.float16), 'true_labels': preds.label_ids}}
     if uncertainties is not None:
-        save_dict['uncertainties'] = uncertainties.astype(np.float16)
-    np.savez_compressed(file_path, **save_dict)
+        save_dict[str(seed)]['uncertainties'] = uncertainties.astype(np.float16)
+
+    existing_dict.update(save_dict)
+    np.savez_compressed(file_path, **existing_dict)
     logger = logger if logger is not None else setup_logger('ib-edl')
     logger.info(f'Predictions saved to {file_path}')

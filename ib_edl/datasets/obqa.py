@@ -5,7 +5,7 @@ from transformers import PreTrainedTokenizer
 
 from .builder import DATASETS
 from .classification import ClassificationDataset
-from .dataset_utils import qa_dataset_collate_fn
+from .dataset_utils import qa_dataset_collate_fn, add_index_to_dataset
 
 
 @DATASETS.register_module()
@@ -56,3 +56,12 @@ class OBQADataset(ClassificationDataset):
 
     def get_collate_fn(self) -> Callable:
         return qa_dataset_collate_fn
+    
+    def get_data_indices(self):
+        return add_index_to_dataset(self.dataset)
+    
+    def get_input_text(self):
+        return self.dataset['question_stem']
+    
+    def get_true_labels(self):
+        return [ord(sample['answerKey']) - ord('A') for sample in self.dataset]

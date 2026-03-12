@@ -5,7 +5,7 @@ from transformers import PreTrainedTokenizer
 
 from .builder import DATASETS
 from .classification import ClassificationDataset
-from .dataset_utils import qa_dataset_collate_fn
+from .dataset_utils import qa_dataset_collate_fn, add_index_to_dataset
 
 
 @DATASETS.register_module()
@@ -28,6 +28,7 @@ class CSQADataset(ClassificationDataset):
         noisy_level: Optional[float] = None,
     ) -> None:
         data_set = load_dataset('commonsense_qa', **dataset_cfg)
+
         if subset_size is not None:
             data_set = data_set.select(range(subset_size))
         data_set.set_format('torch')
@@ -56,3 +57,6 @@ class CSQADataset(ClassificationDataset):
 
     def get_collate_fn(self) -> Callable:
         return qa_dataset_collate_fn
+    
+    def get_data_indices(self):
+        return add_index_to_dataset(self.dataset)
