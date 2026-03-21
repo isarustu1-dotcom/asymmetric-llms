@@ -3,12 +3,10 @@ import os.path as osp
 from copy import deepcopy
 from os import PathLike
 from typing import Any, Dict, Optional, Union
-
 import mmengine
 import numpy as np
 import torch
 from transformers.trainer_utils import PredictionOutput
-
 from .logging import setup_logger
 
 

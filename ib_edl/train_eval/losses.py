@@ -1,8 +1,6 @@
 from typing import Optional
-
 import torch
 import torch.nn as nn
-
 from ..utils import setup_logger
 from .builder import LOSSES
 

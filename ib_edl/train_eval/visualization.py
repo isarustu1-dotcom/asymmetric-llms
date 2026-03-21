@@ -1,13 +1,11 @@
 import os.path as osp
 from typing import Any, Dict, Optional, Tuple
-
 import matplotlib.pyplot as plt
 import mmengine
 import numpy as np
 import torch
 from alive_progress import alive_it
 from transformers.trainer_utils import PredictionOutput
-
 from ..utils import setup_logger
 
 

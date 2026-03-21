@@ -1,5 +1,4 @@
 from typing import Dict
-
 import torch
 import torch.nn.functional as F
 from torchmetrics import Accuracy, CalibrationError

@@ -2,12 +2,11 @@ import json
 import os
 import os.path as osp
 from typing import List, Tuple
-
 import numpy as np
 import pandas as pd
 from scipy.optimize import minimize
 from sklearn.metrics import accuracy_score, f1_score
-from uncertainty_metrics import compute_uncertainty_metrics
+from .uncertainty_metrics import compute_uncertainty_metrics
 
 
 def _logsumexp(arr: np.ndarray, axis: int = 1, keepdims: bool = True) -> np.ndarray:
