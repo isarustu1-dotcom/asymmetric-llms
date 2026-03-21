@@ -3,7 +3,7 @@ import numpy as np
 from scipy.stats import t
 from itertools import combinations
 from sklearn.metrics import accuracy_score, f1_score
-from ib_edl.utils import compute_uncertainty_metrics, _softmax_from_log
+from ib_edl import compute_uncertainty_metrics, _softmax_from_log
 from argparse import ArgumentParser
 import os.path as osp
 import os
