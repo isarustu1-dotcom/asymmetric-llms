@@ -7,10 +7,8 @@ import torch
 import wandb
 from mmengine.runner.utils import set_random_seed
 from transformers import TrainingArguments
-from ib_edl.datasets import DATASETS
-from ib_edl.models import get_model_and_tokenizer
-from ib_edl.train_eval import ClassificationMetric, FTTrainer, plot_predictions
-from ib_edl.utils import save_predictions, setup_logger, optimize_weights
+
+from ib_edl import DATASETS, get_model_and_tokenizer, ClassificationMetric, FTTrainer, plot_predictions, save_predictions, setup_logger, optimize_weights
 
 
 def parse_args():
@@ -77,7 +75,7 @@ def main():
         if not args.no_wandb:
             run_name = args.run_name if args.run_name is not None else timestamp
             run_group = args.run_group if args.run_group is not None else None
-            wandb.init(project=f'ib-edl-{model_type}', dir=work_dir + f'{model_type}', name=run_name, group=run_group)
+            wandb.init(project=f'ib-edl-{model_type}', dir=work_dir + f'/{model_type}', name=run_name, group=run_group)
             wandb.config.update({f'ib-edl-{model_type}_config': cfg.to_dict()})
   
 
@@ -114,8 +112,8 @@ def main():
             target_ids = test_target_ids
 
         training_args = TrainingArguments(
-            output_dir=work_dir + f'{model_type}/',
-            logging_dir=work_dir + f'{model_type}/',
+            output_dir=work_dir + f'/{model_type}/',
+            logging_dir=work_dir + f'/{model_type}/',
             report_to='wandb' if not args.no_wandb else 'none',
             remove_unused_columns=False,
             run_name=timestamp if args.run_name is None else args.run_name,
