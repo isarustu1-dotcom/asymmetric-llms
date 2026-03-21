@@ -8,6 +8,11 @@ from scipy.optimize import minimize
 from sklearn.metrics import accuracy_score, f1_score
 from .uncertainty_metrics import compute_uncertainty_metrics
 
+def __sanity_check_on_probs(probs, which_prob):
+    total_observations = probs.shape[0]
+    
+    print(f'Total number of observation for model {which_prob} is {total_observations}')
+    print(f'Sum of probs for model {which_prob} is {probs.sum(axis=1).sum()}')
 
 def _logsumexp(arr: np.ndarray, axis: int = 1, keepdims: bool = True) -> np.ndarray:
     """Compute numerically stable log-sum-exp.
@@ -36,7 +41,8 @@ def _weighted_nll(weights: np.ndarray, p_base: np.ndarray, p_sidekick: np.ndarra
         float: Mean negative log-likelihood.
     """
     weight_base, weight_sidekick = weights
-    log_p = weight_base * np.log(p_base + 1e-12) + weight_sidekick * np.log(p_sidekick + 1e-12)
+    log_p = weight_base * (p_base + 1e-12) + weight_sidekick * (p_sidekick + 1e-12)
+    #log_p = weight_base * np.log(p_base + 1e-12) + weight_sidekick * np.log(p_sidekick + 1e-12)
     log_p_norm = log_p - _logsumexp(log_p, axis=1, keepdims=True)
     return -np.mean(log_p_norm[np.arange(len(y)), y])
 
@@ -52,41 +58,48 @@ def _softmax_from_log(log_p: np.ndarray, ax: int = 1) -> np.ndarray:
     log_p_norm = log_p - _logsumexp(log_p, axis=ax, keepdims=True)
     return np.exp(log_p_norm)
 
-def _combine_probs(w: float, p_a: np.ndarray, p_b: np.ndarray) -> np.ndarray:
+def _combine_probs(w_base: float, w_sidekick: float, logits_a: np.ndarray, logits_b: np.ndarray) -> np.ndarray:
     """Combine two probability matrices using log-space weighting.
 
     Args:
-        w (float): Weight for the first probability matrix.
-        p_a (np.ndarray): First probability matrix.
-        p_b (np.ndarray): Second probability matrix.
+        w_base (float): Weight for the base model logits.
+        w_sidekick (float): Weight for the sidekick model logits.
+        logits_a (np.ndarray): Base model logits.
+        logits_b (np.ndarray): Sidekick model logits.
 
     Returns:
         np.ndarray: Combined probability matrix.
     """
-    log_p = w * np.log(p_a + 1e-12) + (1.0 - w) * np.log(p_b + 1e-12)
+    log_p = w_base * logits_a + w_sidekick * logits_b
 
     return _softmax_from_log(log_p)
 
-def _build_metrics(split_name: str, w: float, probs_a: np.ndarray, probs_b: np.ndarray, y_true: np.ndarray, ax:int = 1):
+def _build_metrics(split_name: str, w_base: float, w_sidekick: float, logits_a: np.ndarray, logits_b: np.ndarray, y_true: np.ndarray, ax:int = 1):
     """Compute base/sidekick/duo metrics for a split.
 
     Args:
         split_name (str): Split label used for logging.
-        w (float): Weight for base probabilities.
-        probs_a (np.ndarray): Base probabilities.
-        probs_b (np.ndarray): Sidekick probabilities.
+        w_base  (float): Weight for base model logits.
+        w_sidekick (float): Weight for sidekick model logits.
+        logits_a (np.ndarray): Base model logits.
+        logits_b (np.ndarray): Sidekick model logits.
         y_true (np.ndarray): True label indices.
 
     Returns:
         tuple: (metrics dict, duo_probs, duo_pred).
     """
+
+    probs_a = _softmax_from_log(logits_a)
+    __sanity_check_on_probs(probs_a, "base")
     base_pred = probs_a.argmax(axis=ax)
+
+    probs_b = _softmax_from_log(logits_b)
+    __sanity_check_on_probs(probs_b, "sidekick")
     sidekick_pred = probs_b.argmax(axis=ax)
 
-    duo_probs = _combine_probs(w, probs_a, probs_b)
+    duo_probs = _combine_probs(w_base, w_sidekick, logits_a, logits_b)
+    __sanity_check_on_probs(duo_probs, "duo")
     duo_pred = duo_probs.argmax(axis=ax)
-    y_true = y_true
-
     
     metrics = {
         "base_accuracy": accuracy_score(y_true, base_pred),
@@ -134,6 +147,7 @@ def _sort_by_idx(arr: np.ndarray, idx: np.ndarray) -> np.ndarray:
 
 
 
+
 def optimize_weights(result_dir: str, saved_file_name: str, seed:int = 42, constrain_weights: bool = True, verbose: bool = True, optimizer_method: str = "SLSQP"):
 
     # Directory for validation and test results
@@ -176,10 +190,10 @@ def optimize_weights(result_dir: str, saved_file_name: str, seed:int = 42, const
     sidekick_logits_test_sorted = _sort_by_idx(sidekick_test_results['logits'], sidekick_idx_order_test)
 
     # Get validation and test probs and true labels
-    base_logits_val = _softmax_from_log(base_logits_val_sorted)
-    sidekick_logits_val = _softmax_from_log(sidekick_logits_val_sorted)
-    base_logits_test = _softmax_from_log(base_logits_test_sorted)
-    sidekick_logits_test = _softmax_from_log(sidekick_logits_test_sorted)
+    #base_logits_val = _softmax_from_log(base_logits_val_sorted)
+    #sidekick_logits_val = _softmax_from_log(sidekick_logits_val_sorted)
+    #base_logits_test = _softmax_from_log(base_logits_test_sorted)
+    #sidekick_logits_test = _softmax_from_log(sidekick_logits_test_sorted)
 
     true_labels_val = _sort_by_idx(base_val_results['true_labels'], base_idx_order_val)
     true_labels_test = _sort_by_idx(base_test_results['true_labels'], base_idx_order_test)
@@ -198,7 +212,7 @@ def optimize_weights(result_dir: str, saved_file_name: str, seed:int = 42, const
     res = minimize(
         _weighted_nll,
         x0 = x0,
-        args=(base_logits_val, sidekick_logits_val, true_labels_val),
+        args=(base_logits_val_sorted, sidekick_logits_val_sorted, true_labels_val),
         method = optimizer_method,
         bounds = bounds,
         constraints = cons,
@@ -216,8 +230,8 @@ def optimize_weights(result_dir: str, saved_file_name: str, seed:int = 42, const
     print(f"Optimized weights -> base: {w_base:.4f}, sidekick: {w_sidekick:.4f}")
 
     # Get the duo metrics for validation and test sets
-    val_metrics, duo_val_probs, duo_val_pred = _build_metrics("val", w_base, base_logits_val, sidekick_logits_val, true_labels_val)
-    test_metrics, duo_test_probs, duo_test_pred = _build_metrics("test", w_base, base_logits_test, sidekick_logits_test, true_labels_test)
+    val_metrics, duo_val_probs, duo_val_pred = _build_metrics("val", w_base, w_sidekick, base_logits_val_sorted, sidekick_logits_val_sorted, true_labels_val)
+    test_metrics, duo_test_probs, duo_test_pred = _build_metrics("test", w_base, w_sidekick, base_logits_test_sorted, sidekick_logits_test_sorted, true_labels_test)
 
     # Getting paths to save the duo results & create directories if there is none
     duo_metrics_path = osp.join(result_dir, 'duo/metrics', saved_file_name)
