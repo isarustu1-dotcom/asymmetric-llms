@@ -41,7 +41,7 @@ def _weighted_nll(weights: np.ndarray, p_base: np.ndarray, p_sidekick: np.ndarra
         float: Mean negative log-likelihood.
     """
     weight_base, weight_sidekick = weights
-    log_p = weight_base * (p_base + 1e-12) + weight_sidekick * (p_sidekick + 1e-12)
+    log_p = weight_base * p_base  + weight_sidekick * p_sidekick
     #log_p = weight_base * np.log(p_base + 1e-12) + weight_sidekick * np.log(p_sidekick + 1e-12)
     log_p_norm = log_p - _logsumexp(log_p, axis=1, keepdims=True)
     return -np.mean(log_p_norm[np.arange(len(y)), y])
@@ -143,9 +143,6 @@ def _sort_by_idx(arr: np.ndarray, idx: np.ndarray) -> np.ndarray:
 
     else:
         raise ValueError(f"`arr` must be at least 1D (got shape {arr.shape})")
-
-
-
 
 
 def optimize_weights(result_dir: str, saved_file_name: str, seed:int = 42, constrain_weights: bool = True, verbose: bool = True, optimizer_method: str = "SLSQP"):
