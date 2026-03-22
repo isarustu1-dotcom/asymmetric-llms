@@ -2,3 +2,6 @@ _base_: ['../_base_/csqa.yaml', '../_base_/llama3_8b.yaml', '../_base_/misc.yaml
 
 train_cfg:
     max_steps: 30000
+
+process_preds:
+    npz_file: "csqa.npz"

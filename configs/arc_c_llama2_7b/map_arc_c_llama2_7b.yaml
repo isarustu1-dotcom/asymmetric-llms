@@ -2,3 +2,6 @@ _base_: ['../_base_/arc_c.yaml', '../_base_/llama2_7b.yaml', '../_base_/misc.yam
 
 #model:
 #    peft_path: "workdirs/map_baseline/checkpoint-10080"
+
+process_preds:
+    npz_file: "arc_c.npz"
