@@ -13,6 +13,7 @@ def parse_args():
     parser.add_argument('--config_base', help='Path to config file for base model.')
     parser.add_argument('--config_sidekick', help='Path to config file for sidekick model.')
     parser.add_argument('--work-dir', '-w', help='Working directory.')
+    parser.add_argument('--dataset_name', '-d', help='Name of the saved .npz file from training.')
 
 
     return parser.parse_args()
@@ -220,7 +221,7 @@ def main():
     args = parse_args()
     work_dir = args.work_dir
 
-    saved_file_name = f'{args.config_base.split('/')[1].split('_')[0] + ".npz"}'
+    saved_file_name = f'{args.dataset_name + ".npz"}'
     base_model_name_list = args.config_base.split('/')[1].split('_')[-2:]
     base_model_name = '_'.join(base_model_name_list)
 
