@@ -73,3 +73,6 @@ class ARCDataset(ClassificationDataset):
     
     def get_data_indices(self):
         return add_index_to_dataset(self.dataset)
+
+    def get_input_text(self):
+        return self.dataset['question']
