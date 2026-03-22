@@ -46,6 +46,8 @@ def main():
 
     timestamp = datetime.now().strftime('%m%d_%H%M_%S')
 
+    print(f'Training with seed {args.seed} has begun. \n')
+
     #Getting base and sidekick names
     base_model_name_list = args.config_base.split('/')[1].split('_')[1:]
     base_model_name = '_'.join(base_model_name_list)
