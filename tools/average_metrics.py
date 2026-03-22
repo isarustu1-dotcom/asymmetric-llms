@@ -221,10 +221,10 @@ def main():
     work_dir = args.work_dir
 
     saved_file_name = f'{args.config_base.split('/')[1].split('_')[0] + ".npz"}'
-    base_model_name_list = args.config_base.split('/')[1].split('_')[1:]
+    base_model_name_list = args.config_base.split('/')[1].split('_')[-2:]
     base_model_name = '_'.join(base_model_name_list)
 
-    sidekick_model_name_list = args.config_sidekick.split('/')[1].split('_')[1:]
+    sidekick_model_name_list = args.config_sidekick.split('/')[1].split('_')[-2:]
     sidekick_model_name = '_'.join(sidekick_model_name_list)
 
     model_combination_path = f'{base_model_name}_{sidekick_model_name}/'
