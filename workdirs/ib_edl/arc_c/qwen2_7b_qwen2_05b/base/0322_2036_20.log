@@ -1,0 +1,182 @@
+2026-03-22 20:36:22,145 - ib-edl - [92mINFO[0m: Using base config:
+============================================================
+data = dict(
+    test=dict(
+        add_space=True,
+        dataset_cfg=dict(split='validation'),
+        name_suffix='C',
+        subset_size=None,
+        type='ARCDataset'),
+    train=dict(
+        add_space=True,
+        dataset_cfg=dict(split='train'),
+        name_suffix='C',
+        subset_size=None,
+        type='ARCDataset'),
+    val=dict(
+        add_space=True,
+        dataset_cfg=dict(split='validation'),
+        name_suffix='C',
+        subset_size=None,
+        type='ARCDataset'))
+model = dict(
+    model_cfg=dict(torch_dtype='bfloat16', type='AutoModelForCausalLM'),
+    model_name_or_path='Qwen/Qwen2-7B',
+    peft_cfg=dict(
+        bias='lora_only',
+        inference_mode=False,
+        lora_alpha=16,
+        lora_dropout=0.1,
+        r=8,
+        target_modules=[
+            'q_proj',
+            'k_proj',
+            'v_proj',
+            'o_proj',
+        ],
+        task_type='CAUSAL_LM',
+        type='LoraConfig'),
+    peft_path=None,
+    special_tokens=dict(pad_token='<|endoftext|>'),
+    tokenizer_cfg=dict(type='AutoTokenizer', use_fast=True),
+    use_peft=True)
+process_preds = dict(
+    do_plot=False,
+    npz_file='arc_c.npz',
+    plot_cfg=dict(plot_grid_size=[
+        5,
+        5,
+    ]))
+tokenizer_run_cfg = dict(
+    max_length=300, padding=True, return_tensors='pt', truncation=True)
+train_cfg = dict(
+    bf16=True,
+    do_eval=True,
+    do_train=True,
+    eval_strategy='epoch',
+    learning_rate=5e-05,
+    logging_steps=20,
+    lr_scheduler_type='cosine',
+    max_steps=10080,
+    per_device_eval_batch_size=4,
+    per_device_train_batch_size=4,
+    save_only_model=True,
+    save_strategy='epoch',
+    save_total_limit=1,
+    warmup_steps=20,
+    weight_decay=0.0)
+
+============================================================
+2026-03-22 20:36:22,147 - ib-edl - [92mINFO[0m: Set torch.backends.cuda.enable_flash_sdp and torch.backends.cuda.enable_mem_efficient_sdp to False.
+2026-03-22 20:36:22,724 - ib-edl - [92mINFO[0m: Setting up PEFT.
+2026-03-22 21:07:22,173 - ib-edl - [92mINFO[0m: Fine-tuning for base model finished.
+2026-03-22 21:07:26,711 - ib-edl - [92mINFO[0m: Validation metrics for base model: val_loss: 1.449932336807251
+2026-03-22 21:07:26,711 - ib-edl - [92mINFO[0m: Validation metrics for base model: val_accuracy: 0.8829431533813477
+2026-03-22 21:07:26,711 - ib-edl - [92mINFO[0m: Validation metrics for base model: val_ece: 0.11562016606330872
+2026-03-22 21:07:26,711 - ib-edl - [92mINFO[0m: Validation metrics for base model: val_nll: 1.4499322175979614
+2026-03-22 21:07:26,711 - ib-edl - [92mINFO[0m: Validation metrics for base model: val_runtime: 4.536
+2026-03-22 21:07:26,711 - ib-edl - [92mINFO[0m: Validation metrics for base model: val_samples_per_second: 65.917
+2026-03-22 21:07:26,711 - ib-edl - [92mINFO[0m: Validation metrics for base model: val_steps_per_second: 16.534
+2026-03-22 21:07:26,712 - ib-edl - [92mINFO[0m: Validation metrics for base model: epoch: 36.0
+2026-03-22 21:07:31,248 - ib-edl - [92mINFO[0m: Test metrics for base model: test_loss: 1.449932336807251
+2026-03-22 21:07:31,248 - ib-edl - [92mINFO[0m: Test metrics for base model: test_accuracy: 0.8829431533813477
+2026-03-22 21:07:31,248 - ib-edl - [92mINFO[0m: Test metrics for base model: test_ece: 0.11562016606330872
+2026-03-22 21:07:31,249 - ib-edl - [92mINFO[0m: Test metrics for base model: test_nll: 1.4499322175979614
+2026-03-22 21:07:31,249 - ib-edl - [92mINFO[0m: Test metrics for base model: test_runtime: 4.5347
+2026-03-22 21:07:31,250 - ib-edl - [92mINFO[0m: Test metrics for base model: test_samples_per_second: 65.936
+2026-03-22 21:07:31,250 - ib-edl - [92mINFO[0m: Test metrics for base model: test_steps_per_second: 16.539
+2026-03-22 21:07:31,250 - ib-edl - [92mINFO[0m: Test metrics for base model: epoch: 36.0
+2026-03-22 21:07:40,362 - ib-edl - [92mINFO[0m: Start processing predictions.
+2026-03-22 21:07:40,417 - ib-edl - [92mINFO[0m: Predictions with seed 2 saved to workdirs/ib_edl/arc_c/qwen2_7b_qwen2_05b/base/val_preds/arc_c.npz
+2026-03-22 21:07:40,468 - ib-edl - [92mINFO[0m: Predictions with seed 2 saved to workdirs/ib_edl/arc_c/qwen2_7b_qwen2_05b/base/test_preds/arc_c.npz
+2026-03-22 21:07:40,840 - ib-edl - [92mINFO[0m: Using sidekick config:
+============================================================
+data = dict(
+    test=dict(
+        add_space=True,
+        dataset_cfg=dict(split='validation'),
+        name_suffix='C',
+        subset_size=None,
+        type='ARCDataset'),
+    train=dict(
+        add_space=True,
+        dataset_cfg=dict(split='train'),
+        name_suffix='C',
+        subset_size=None,
+        type='ARCDataset'),
+    val=dict(
+        add_space=True,
+        dataset_cfg=dict(split='validation'),
+        name_suffix='C',
+        subset_size=None,
+        type='ARCDataset'))
+model = dict(
+    model_cfg=dict(torch_dtype='bfloat16', type='AutoModelForCausalLM'),
+    model_name_or_path='Qwen/Qwen2-0.5B',
+    peft_cfg=dict(
+        bias='lora_only',
+        inference_mode=False,
+        lora_alpha=16,
+        lora_dropout=0.1,
+        r=8,
+        target_modules=[
+            'q_proj',
+            'k_proj',
+            'v_proj',
+            'o_proj',
+        ],
+        task_type='CAUSAL_LM',
+        type='LoraConfig'),
+    peft_path=None,
+    special_tokens=dict(pad_token='<|endoftext|>'),
+    tokenizer_cfg=dict(type='AutoTokenizer', use_fast=True),
+    use_peft=True)
+process_preds = dict(
+    do_plot=False,
+    npz_file='arc_c.npz',
+    plot_cfg=dict(plot_grid_size=[
+        5,
+        5,
+    ]))
+tokenizer_run_cfg = dict(
+    max_length=300, padding=True, return_tensors='pt', truncation=True)
+train_cfg = dict(
+    bf16=True,
+    do_eval=True,
+    do_train=True,
+    eval_strategy='epoch',
+    learning_rate=5e-05,
+    logging_steps=20,
+    lr_scheduler_type='cosine',
+    max_steps=10080,
+    per_device_eval_batch_size=4,
+    per_device_train_batch_size=4,
+    save_only_model=True,
+    save_strategy='epoch',
+    save_total_limit=1,
+    warmup_steps=20,
+    weight_decay=0.0)
+
+============================================================
+2026-03-22 21:07:40,841 - ib-edl - [92mINFO[0m: Set torch.backends.cuda.enable_flash_sdp and torch.backends.cuda.enable_mem_efficient_sdp to False.
+2026-03-22 21:07:41,300 - ib-edl - [92mINFO[0m: Setting up PEFT.
+2026-03-22 21:34:19,208 - ib-edl - [92mINFO[0m: Fine-tuning for sidekick model finished.
+2026-03-22 21:34:22,855 - ib-edl - [92mINFO[0m: Validation metrics for sidekick model: val_loss: 7.469650745391846
+2026-03-22 21:34:22,856 - ib-edl - [92mINFO[0m: Validation metrics for sidekick model: val_accuracy: 0.5150501728057861
+2026-03-22 21:34:22,856 - ib-edl - [92mINFO[0m: Validation metrics for sidekick model: val_ece: 0.4674781560897827
+2026-03-22 21:34:22,856 - ib-edl - [92mINFO[0m: Validation metrics for sidekick model: val_nll: 7.469650745391846
+2026-03-22 21:34:22,856 - ib-edl - [92mINFO[0m: Validation metrics for sidekick model: val_runtime: 3.6456
+2026-03-22 21:34:22,856 - ib-edl - [92mINFO[0m: Validation metrics for sidekick model: val_samples_per_second: 82.017
+2026-03-22 21:34:22,857 - ib-edl - [92mINFO[0m: Validation metrics for sidekick model: val_steps_per_second: 20.573
+2026-03-22 21:34:22,857 - ib-edl - [92mINFO[0m: Validation metrics for sidekick model: epoch: 36.0
+2026-03-22 21:34:26,489 - ib-edl - [92mINFO[0m: Test metrics for sidekick model: test_loss: 7.469650745391846
+2026-03-22 21:34:26,489 - ib-edl - [92mINFO[0m: Test metrics for sidekick model: test_accuracy: 0.5150501728057861
+2026-03-22 21:34:26,490 - ib-edl - [92mINFO[0m: Test metrics for sidekick model: test_ece: 0.4674781560897827
+2026-03-22 21:34:26,490 - ib-edl - [92mINFO[0m: Test metrics for sidekick model: test_nll: 7.469650745391846
+2026-03-22 21:34:26,490 - ib-edl - [92mINFO[0m: Test metrics for sidekick model: test_runtime: 3.6303
+2026-03-22 21:34:26,490 - ib-edl - [92mINFO[0m: Test metrics for sidekick model: test_samples_per_second: 82.362
+2026-03-22 21:34:26,490 - ib-edl - [92mINFO[0m: Test metrics for sidekick model: test_steps_per_second: 20.659
+2026-03-22 21:34:26,491 - ib-edl - [92mINFO[0m: Test metrics for sidekick model: epoch: 36.0
+2026-03-22 21:34:33,838 - ib-edl - [92mINFO[0m: Start processing predictions.
+2026-03-22 21:34:33,892 - ib-edl - [92mINFO[0m: Predictions with seed 2 saved to workdirs/ib_edl/arc_c/qwen2_7b_qwen2_05b/sidekick/val_preds/arc_c.npz
+2026-03-22 21:34:33,941 - ib-edl - [92mINFO[0m: Predictions with seed 2 saved to workdirs/ib_edl/arc_c/qwen2_7b_qwen2_05b/sidekick/test_preds/arc_c.npz
