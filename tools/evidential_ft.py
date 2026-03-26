@@ -159,7 +159,7 @@ def main():
             logger.info('Start processing predictions.')
         
             if cfg.process_preds['do_plot']:
-                plot_predictions(predictions_test, cfg.porcess_preds['plot_cfg'], work_dir)
+                plot_predictions(predictions_test, cfg.process_preds['plot_cfg'], work_dir)
             if cfg.process_preds['npz_file'] is not None:
                 save_predictions(predictions_val, osp.join(work_dir, f'{model_type}/val_preds', cfg.process_preds['npz_file']), logger=logger, seed=args.seed, data_idx=val_idx, input_text=val_set.get_input_text())
                 save_predictions(predictions_test, osp.join(work_dir, f'{model_type}/test_preds', cfg.process_preds['npz_file']), logger=logger, seed=args.seed, data_idx=test_idx, input_text=test_set.get_input_text())
