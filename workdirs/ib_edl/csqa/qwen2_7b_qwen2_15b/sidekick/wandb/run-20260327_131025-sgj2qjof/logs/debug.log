@@ -1,0 +1,5 @@
+2026-03-27 13:10:25,661 INFO    MainThread:861599 [wandb_init.py:setup_run_log_directory():717] Logging user logs to workdirs/ib_edl/csqa/qwen2_7b_qwen2_15b/sidekick/wandb/run-20260327_131025-sgj2qjof/logs/debug.log
+2026-03-27 13:10:25,661 INFO    MainThread:861599 [wandb_init.py:setup_run_log_directory():718] Logging internal logs to workdirs/ib_edl/csqa/qwen2_7b_qwen2_15b/sidekick/wandb/run-20260327_131025-sgj2qjof/logs/debug-internal.log
+2026-03-27 13:10:25,661 INFO    MainThread:861599 [wandb_init.py:init():844] calling init triggers
+2026-03-27 13:10:25,661 INFO    MainThread:861599 [wandb_init.py:init():849] wandb.init called with sweep_config: {}
+config: {'_wandb': {}}
