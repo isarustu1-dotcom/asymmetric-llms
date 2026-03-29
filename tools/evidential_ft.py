@@ -118,6 +118,7 @@ def main():
             logging_dir=work_dir + f'/{model_type}/',
             report_to='wandb' if not args.no_wandb else 'none',
             remove_unused_columns=False,
+            seed = args.seed,
             run_name=timestamp if args.run_name is None else args.run_name,
             **cfg.train_cfg)
 
