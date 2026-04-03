@@ -1,0 +1,16 @@
+#!/bin/bash
+#SBATCH -p mcml-dgx-a100-40x8
+#SBATCH --qos=mcml
+#SBATCH --ntasks=1
+#SBATCH --gres=gpu:1
+#SBATCH -t 30:00:00
+source ~/.bashrc
+mamba activate adl-asymmetric-lm-duos
+
+pip install -e .
+
+python tools/edl_ft.py --config_base configs/csqa_qwen2_7b/ib_csqa_qwen2_7b.yaml --config_sidekick configs/csqa_qwen2_15b/ib_csqa_qwen2_15b.yaml -w workdirs/ib_edl_qwen/csqa/ -n ib_csqa_qwen2_7b_qwen2_15b --seed 1
+python tools/edl_ft.py --config_base configs/csqa_qwen2_7b/ib_csqa_qwen2_7b.yaml --config_sidekick configs/csqa_qwen2_15b/ib_csqa_qwen2_15b.yaml -w workdirs/ib_edl_qwen/csqa/ -n ib_csqa_qwen2_7b_qwen2_15b --seed 2
+python tools/edl_ft.py --config_base configs/csqa_qwen2_7b/ib_csqa_qwen2_7b.yaml --config_sidekick configs/csqa_qwen2_15b/ib_csqa_qwen2_15b.yaml -w workdirs/ib_edl_qwen/csqa/ -n ib_csqa_qwen2_7b_qwen2_15b --seed 3
+python tools/edl_ft.py --config_base configs/csqa_qwen2_7b/ib_csqa_qwen2_7b.yaml --config_sidekick configs/csqa_qwen2_15b/ib_csqa_qwen2_15b.yaml -w workdirs/ib_edl_qwen/csqa/ -n ib_csqa_qwen2_7b_qwen2_15b --seed 4
+python tools/edl_ft.py --config_base configs/csqa_qwen2_7b/ib_csqa_qwen2_7b.yaml --config_sidekick configs/csqa_qwen2_15b/ib_csqa_qwen2_15b.yaml -w workdirs/ib_edl_qwen/csqa/ -n ib_csqa_qwen2_7b_qwen2_15b --seed 5
