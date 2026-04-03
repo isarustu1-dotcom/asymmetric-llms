@@ -8,7 +8,7 @@ import wandb
 from mmengine.runner.utils import set_random_seed
 from transformers import TrainingArguments
 
-from ib_edl import DATASETS, get_model_and_tokenizer, ClassificationMetric, FTTrainer, plot_predictions, save_predictions, setup_logger, optimize_weights
+from ib_edl import DATASETS, get_model_and_tokenizer, ClassificationMetric, FTTrainer, plot_predictions, save_predictions, setup_logger, optimize_weights, optimize_temperature_scaling
 
 
 def parse_args():
@@ -165,7 +165,10 @@ def main():
                 save_predictions(predictions_val, osp.join(work_dir, f'{model_type}/val_preds', cfg.process_preds['npz_file']), logger=logger, seed=args.seed, data_idx=val_idx, input_text=val_set.get_input_text())
                 save_predictions(predictions_test, osp.join(work_dir, f'{model_type}/test_preds', cfg.process_preds['npz_file']), logger=logger, seed=args.seed, data_idx=test_idx, input_text=test_set.get_input_text())
 
-    # Start to implement duo optimization
+    # Implementing temperature scaling
+    optimize_temperature_scaling(work_dir, cfg.process_preds['npz_file'], seed=args.seed)
+
+    # Implementing duo optimization
     optimize_weights(work_dir, cfg.process_preds['npz_file'], seed=args.seed)
 
 if __name__ == '__main__':

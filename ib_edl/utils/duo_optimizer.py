@@ -1,32 +1,12 @@
-import json
 import os
 import os.path as osp
-from typing import Dict, List, Tuple
+from typing import Dict
 import numpy as np
-import pandas as pd
 from scipy.optimize import minimize
 from sklearn.metrics import accuracy_score, f1_score
 from .uncertainty_metrics import compute_uncertainty_metrics
+from .optimizer_helpers import __sanity_check_on_probs, _logsumexp, _softmax_from_log, _sort_by_idx, _read_or_create_path, _save_val_test_results, _merge_dictionaries
 
-def __sanity_check_on_probs(probs, which_prob):
-    total_observations = probs.shape[0]
-    
-    print(f'Total number of observation for model {which_prob} is {total_observations}')
-    print(f'Sum of probs for model {which_prob} is {probs.sum(axis=1).sum()}')
-
-def _logsumexp(arr: np.ndarray, axis: int = 1, keepdims: bool = True) -> np.ndarray:
-    """Compute numerically stable log-sum-exp.
-
-    Args:
-        arr (np.ndarray): Input array.
-        axis (int): Axis over which to reduce.
-        keepdims (bool): Whether to keep reduced dimensions.
-
-    Returns:
-        np.ndarray: Log-sum-exp result.
-    """
-    m = np.max(arr, axis=axis, keepdims=True)
-    return m + np.log(np.sum(np.exp(arr - m), axis=axis, keepdims=True) + 1e-12)
 
 def _weighted_nll(scales: np.ndarray, logits_base: np.ndarray, logits_sidekick: np.ndarray, y: np.ndarray) -> float:
     """Negative log-likelihood for a calibrated logit-space ensemble.
@@ -45,17 +25,6 @@ def _weighted_nll(scales: np.ndarray, logits_base: np.ndarray, logits_sidekick: 
     log_p_norm = log_p - _logsumexp(log_p, axis=1, keepdims=True)
     return -np.mean(log_p_norm[np.arange(len(y)), y])
 
-def _softmax_from_log(log_p: np.ndarray, ax: int = 1) -> np.ndarray:
-    """Convert log-probabilities to normalized probabilities.
-
-    Args:
-        log_p (np.ndarray): Log-probability matrix.
-
-    Returns:
-        np.ndarray: Normalized probability matrix.
-    """
-    log_p_norm = log_p - _logsumexp(log_p, axis=ax, keepdims=True)
-    return np.exp(log_p_norm)
 
 def _combine_logits(scale_base: float, scale_sidekick: float, logits_a: np.ndarray, logits_b: np.ndarray) -> np.ndarray:
     """Combine two logit matrices using calibrated effective scales.
@@ -174,36 +143,32 @@ def _fit_temperature_weighted_scales(
         'optimizer_fun': float(res.fun),
     }
 
-def _sort_by_idx(arr: np.ndarray, idx: np.ndarray) -> np.ndarray:
-    """
-    Reorder `arr` using indices `idx`.
+def _get_optimization_params(base_logits, sidekick_logits, true_labels, verbose, optimizer_method):
+    params = _fit_temperature_weighted_scales(
+        base_logits,
+        sidekick_logits,
+        true_labels,
+        verbose=verbose,
+        optimizer_method=optimizer_method
+    )
+    
+    scale_base = params['scale_base']
+    scale_sidekick = params['scale_sidekick']
+    weight_base = params['weight_base']
+    weight_sidekick = params['weight_sidekick']
+    temperature_base = params["temperature_base"]
+    temperature_sidekick = params["temperature_sidekick"]
 
-    Supports:
-      - arr shape: (N,)
-      - arr shape: (B, N) or (B, N, ...)
-      - idx shape: (N,) or (B, N)
+    print(
+        'Optimized temperature-weighted duo -> '
+        f'base_scale: {scale_base:.4f}, sidekick_scale: {scale_sidekick:.4f}, '
+        f'base_weight: {weight_base:.4f}, sidekick_weight: {weight_sidekick:.4f}, '
+        f'base_temp: {temperature_base:.4f}, sidekick_temp: {temperature_sidekick:.4f}'
+    )
+    
+    return scale_base, scale_sidekick, weight_base, weight_sidekick, temperature_base, temperature_sidekick
 
-    Returns:
-      - reordered array with same shape as `arr`
-    """
-    arr = np.asarray(arr)
-    idx = np.asarray(idx)
-
-    if arr.ndim == 1:
-        if idx.shape[0] != arr.shape[0]:
-            raise ValueError(f"`idx` shape {idx.shape} incompatible with arr size {arr.shape[0]}")
-        return arr[idx]
-    elif arr.ndim >= 2:
-        B, N = arr.shape[0], arr.shape[1]
-        if idx.shape[0] != B:
-            raise ValueError(f"`idx` shape {idx.shape} incompatible with arr axis=1 size {N}")
-        return arr[idx]
-
-    else:
-        raise ValueError(f"`arr` must be at least 1D (got shape {arr.shape})")
-
-
-def optimize_weights(result_dir: str, saved_file_name: str, seed:int = 42, constrain_weights: bool = True, verbose: bool = True, optimizer_method: str = "L-BFGS-B"):
+def optimize_weights(result_dir: str, saved_file_name: str, seed:int = 42, verbose: bool = True, optimizer_method: str = "L-BFGS-B"):
 
     # Directory for validation and test results
     base_model_validation_results_path = osp.join(result_dir, f'base/val_preds', saved_file_name)
@@ -253,7 +218,7 @@ def optimize_weights(result_dir: str, saved_file_name: str, seed:int = 42, const
     true_labels_val = _sort_by_idx(base_val_results['true_labels'], base_idx_order_val)
     true_labels_test = _sort_by_idx(base_test_results['true_labels'], base_idx_order_test)
 
-    params = _fit_temperature_weighted_scales(
+    scale_base, scale_sidekick, weight_base, weight_sidekick, temperature_base, temperature_sidekick = _get_optimization_params(
         base_logits_val_sorted,
         sidekick_logits_val_sorted,
         true_labels_val,
@@ -261,88 +226,70 @@ def optimize_weights(result_dir: str, saved_file_name: str, seed:int = 42, const
         optimizer_method=optimizer_method,
     )
 
-    scale_base = params['scale_base']
-    scale_sidekick = params['scale_sidekick']
-    weight_base = params['weight_base']
-    weight_sidekick = params['weight_sidekick']
-
-    print(
-        'Optimized temperature-weighted duo -> '
-        f'base_scale: {scale_base:.4f}, sidekick_scale: {scale_sidekick:.4f}, '
-        f'base_weight: {weight_base:.4f}, sidekick_weight: {weight_sidekick:.4f}, '
-        f'base_temp: {params["temperature_base"]:.4f}, sidekick_temp: {params["temperature_sidekick"]:.4f}'
-    )
-
     # Get the duo metrics for validation and test sets
     val_metrics, duo_val_logits, duo_val_probs, duo_val_pred = _build_metrics("val", scale_base, scale_sidekick, base_logits_val_sorted, sidekick_logits_val_sorted, true_labels_val)
     test_metrics, duo_test_logits, duo_test_probs, duo_test_pred = _build_metrics("test", scale_base, scale_sidekick, base_logits_test_sorted, sidekick_logits_test_sorted, true_labels_test)
 
     # Getting paths to save the duo results & create directories if there is none
-    duo_metrics_path = osp.join(result_dir, 'duo/metrics', saved_file_name)
+    duo_metrics_path = osp.join(result_dir, 'metrics', saved_file_name)
     duo_validation_results_path = osp.join(result_dir, 'duo/val_preds', saved_file_name)
     duo_test_results_path = osp.join(result_dir, 'duo/test_preds', saved_file_name)
     
+    # Read data if it is already there or create the directory
+    existing_dict_val = _read_or_create_path(duo_validation_results_path)
+    existing_dict_test = _read_or_create_path(duo_test_results_path)
+    existing_dict_metrics = _read_or_create_path(duo_metrics_path)
 
-    # Read data if it was written before and update it
-    if osp.exists(duo_validation_results_path):
-        existing_dict_val = dict(np.load(duo_validation_results_path, allow_pickle = True))
-    else:
-        os.makedirs(osp.dirname(duo_validation_results_path), exist_ok=True)
-        existing_dict_val = {}
-        
-    if osp.exists(duo_test_results_path):
-        existing_dict_test = dict(np.load(duo_test_results_path, allow_pickle = True))
-    else:
-        os.makedirs(osp.dirname(duo_test_results_path), exist_ok=True)
-        existing_dict_test = {}
-        
-    if osp.exists(duo_metrics_path):
-        existing_dict_metrics= dict(np.load(duo_metrics_path, allow_pickle = True))
-    else:
-        os.makedirs(osp.dirname(duo_metrics_path), exist_ok=True)
-        existing_dict_metrics= {}
-    
-    save_dict_val = {
-        str(seed): {
-        'data' : saved_file_name,
-        'idx': _sort_by_idx(base_val_results['idx'], base_idx_order_val),
-        'input': _sort_by_idx(base_val_results['input'], base_idx_order_val),
-        'logits': duo_val_logits.astype(np.float32),
-        'softmax_probs': duo_val_probs,
-        'preds': duo_val_pred,
-        'true_labels': _sort_by_idx(base_val_results['true_labels'], base_idx_order_val),
-        }
-    }
-    
-    save_dict_test = {
-        str(seed): {
-        'data' : saved_file_name,
-        'idx': _sort_by_idx(base_test_results['idx'], base_idx_order_test),
-        'input': _sort_by_idx(base_test_results['input'], base_idx_order_test),
-        'logits': duo_test_logits.astype(np.float32),
-        'softmax_probs': duo_test_probs,
-        'preds': duo_test_pred,
-        'true_labels': _sort_by_idx(base_test_results['true_labels'], base_idx_order_test),
-        }
-    }
+    # Save duo validation results
+    _save_val_test_results(
+        seed,
+        saved_file_name,
+        _sort_by_idx(base_val_results['idx'], base_idx_order_val),
+        _sort_by_idx(base_val_results['input'], base_idx_order_val),
+        duo_val_logits.astype(np.float32),
+        duo_val_probs,
+        duo_val_pred,
+        _sort_by_idx(base_val_results['true_labels'], base_idx_order_val),
+        existing_dict_val,
+        duo_validation_results_path
+    )
 
-    existing_dict_val.update(save_dict_val)
-    np.savez_compressed(duo_validation_results_path, **existing_dict_val)
-
-    existing_dict_test.update(save_dict_test)
-    np.savez_compressed(duo_test_results_path, **existing_dict_test)
+    # Save duo test results
+    _save_val_test_results(
+        seed,
+        saved_file_name,
+        _sort_by_idx(base_test_results['idx'], base_idx_order_test),
+        _sort_by_idx(base_test_results['input'], base_idx_order_test),
+        duo_test_logits.astype(np.float32),
+        duo_test_probs,
+        duo_test_pred,
+        _sort_by_idx(base_test_results['true_labels'], base_idx_order_test),
+        existing_dict_test,
+        duo_test_results_path
+    )
 
     # Loading metrics summary results 
-    metrics = {str(seed):{
+    # metrics = {str(seed):{
+    #     'data' : saved_file_name,
+    #     'duo_weights': {'base': weight_base, 'sidekick': weight_sidekick},
+    #     'duo_effective_scales': {'base': scale_base, 'sidekick': scale_sidekick},
+    #     'duo_temperatures': {'base': temperature_base, 'sidekick': temperature_sidekick},
+    #     'val': val_metrics,
+    #     'test': test_metrics,
+    #     }
+    # }
+
+    metrics = {
         'data' : saved_file_name,
-        'weights': {'base': weight_base, 'sidekick': weight_sidekick},
-        'effective_scales': {'base': scale_base, 'sidekick': scale_sidekick},
-        'temperatures': {'base': params['temperature_base'], 'sidekick': params['temperature_sidekick']},
+        'duo_weights': {'base': weight_base, 'sidekick': weight_sidekick},
+        'duo_effective_scales': {'base': scale_base, 'sidekick': scale_sidekick},
+        'duo_temperatures': {'base': temperature_base, 'sidekick': temperature_sidekick},
         'val': val_metrics,
         'test': test_metrics,
         }
-    }
+    
 
-    existing_dict_metrics.update(metrics)
+    updating_dict = {str(seed) : _merge_dictionaries(existing_dict_metrics[str(seed)].item(), metrics)}
+    existing_dict_metrics.update(updating_dict)
     np.savez_compressed(duo_metrics_path, **existing_dict_metrics)
    

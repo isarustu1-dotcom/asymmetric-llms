@@ -1,7 +1,7 @@
 from .datasets import DATASETS
 from .models import get_model_and_tokenizer
 from .train_eval import ClassificationMetric, FTTrainer, plot_predictions
-from .utils import save_predictions, setup_logger, optimize_weights, compute_uncertainty_metrics, _softmax_from_log
+from .utils import save_predictions, setup_logger, optimize_weights, compute_uncertainty_metrics, _softmax_from_log, optimize_temperature_scaling
 
 __all__ = [
     'DATASETS',
@@ -14,4 +14,5 @@ __all__ = [
     'optimize_weights',
     'compute_uncertainty_metrics',
     '_softmax_from_log',
+    'optimize_temperature_scaling'
 ]

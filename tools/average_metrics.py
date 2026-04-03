@@ -113,7 +113,7 @@ def _deep_ensemble_metrics(data: pd.DataFrame, seed_pairs, suffix: str) -> pd.Da
         f1_score_macro = f1_score(seed_data_1["true_label"], predicted_labels, average="macro")
         metrics = {"accuracy": acc, "f1_macro": f1_score_macro}
 
-        metrics.update(compute_uncertainty_metrics(deep_ensemble_probs, seed_data_1["true_label"]))
+        metrics.update(compute_uncertainty_metrics(deep_ensemble_probs.astype(np.float32), seed_data_1["true_label"]))
         metrics_by_pair[f"{s1}_{s2}"] = metrics
 
     return pd.DataFrame.from_dict(metrics_by_pair, orient="index").reset_index().rename(columns={"index": "seed"})
@@ -232,7 +232,7 @@ def main():
     work_dir = osp.join(work_dir, model_combination_path)
 
     # Reading data
-    metrics_path = osp.join(work_dir, f'duo/metrics', saved_file_name)
+    metrics_path = osp.join(work_dir, f'metrics', saved_file_name)
     metrics_data = dict(np.load(metrics_path, allow_pickle = True))
 
     base_test_path = osp.join(work_dir, f'base/test_preds', saved_file_name)
@@ -244,10 +244,16 @@ def main():
     average_metrics_summary_path = osp.join(work_dir, f'overall_metrics_summary/')
     os.makedirs(average_metrics_summary_path, exist_ok=True) # Create the path for the first time
 
+    # Get model names from metrics data. Each metrics dict include val set and nll metric.
+    model_names = []
+    for k,v in metrics_data[next(iter(metrics_data))].item()["val"].items():
+        if 'nll' in k:
+            model_names.append(k.replace('_nll', ''))
+    
     # Creating summary pd data
-    summary_df = _create_metrics_summary_df(metrics_data, ['val', 'test'], ['base', 'sidekick', 'duo'], output_dir=metrics_path)
+    summary_df = _create_metrics_summary_df(metrics_data, ['val', 'test'], model_names, output_dir=metrics_path)
     summaries = []
-    for model_type in ["base", "sidekick", "duo"]:
+    for model_type in model_names:
         for split in ["val", "test"]:
             summaries.append(_summarize_with_ci(summary_df, model_type, split))
 
@@ -280,13 +286,13 @@ def main():
     summary_df.to_csv(osp.join(average_metrics_summary_path, "metrics_summary_ci_raw.csv"), index=False)
 
     metric_order = ["accuracy", "f1_macro", "nll", "brier", "ece", "lppd", "mean_uncertainty"]
-    model_order = ["base", "sidekick", "duo", "base_de(2)", "sidekick_de(2)"]
+    model_names = model_names.append(["base_de(2)", "sidekick_de(2)"])
     split_order = ["val", "test"]
 
     pretty = summary_df.copy()
     pretty["value"] = pretty.apply(lambda r: _format_ci(r["mean"], r["ci_low"], r["ci_high"]), axis=1)
     pretty["metric"] = pd.Categorical(pretty["metric"], categories=metric_order, ordered=True)
-    pretty["model"] = pd.Categorical(pretty["model"], categories=model_order, ordered=True)
+    pretty["model"] = pd.Categorical(pretty["model"], categories=model_names, ordered=True)
     pretty["split"] = pd.Categorical(pretty["split"], categories=split_order, ordered=True)
     pretty = pretty.sort_values(["model", "split", "metric"])
 
