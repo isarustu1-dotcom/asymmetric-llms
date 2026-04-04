@@ -135,7 +135,7 @@ def _create_metrics_summary_df(data: dict, split_list: list, model_type: list, o
     # Create an empty DataFrame to hold the summary
     seeds_df = list(data.keys()) * number_of_model_type * number_of_split
     split_df = split_list * number_of_model_type * number_of_seed
-    model_type_df = model_type * number_of_seed * number_of_split
+    model_type_df = sorted(model_type * number_of_seed * number_of_split)
     metrics = []
     # Extract metric names from the data. Sufficient to check the first seed and duo keys because structure is consistent.
     for key in data[list(data.keys())[0]].item()['val']:
