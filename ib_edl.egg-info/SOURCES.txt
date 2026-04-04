@@ -32,6 +32,8 @@ ib_edl/utils/__init__.py
 ib_edl/utils/duo_optimizer.py
 ib_edl/utils/logging.py
 ib_edl/utils/misc.py
+ib_edl/utils/optimizer_helpers.py
+ib_edl/utils/temperature_scaling.py
 ib_edl/utils/typing.py
 ib_edl/utils/uncertainty_metrics.py
 tests/test_dataset.py

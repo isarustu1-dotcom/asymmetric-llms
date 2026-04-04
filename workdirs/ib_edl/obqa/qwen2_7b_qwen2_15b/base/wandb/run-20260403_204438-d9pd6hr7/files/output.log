@@ -1,0 +1,287 @@
+2026-04-03 20:44:39,539 - ib-edl - [92mINFO[0m: Using base config:
+============================================================
+data = dict(
+    test=dict(
+        add_space=True,
+        dataset_cfg=dict(split='test'),
+        subset_size=2,
+        type='OBQADataset'),
+    train=dict(
+        add_space=True,
+        dataset_cfg=dict(split='train'),
+        subset_size=10,
+        type='OBQADataset'),
+    val=dict(
+        add_space=True,
+        dataset_cfg=dict(split='validation'),
+        subset_size=1,
+        type='OBQADataset'))
+model = dict(
+    model_cfg=dict(torch_dtype='bfloat16', type='AutoModelForCausalLM'),
+    model_name_or_path='Qwen/Qwen2-7B',
+    peft_cfg=dict(
+        bias='lora_only',
+        inference_mode=False,
+        lora_alpha=16,
+        lora_dropout=0.1,
+        r=8,
+        target_modules=[
+            'q_proj',
+            'k_proj',
+            'v_proj',
+            'o_proj',
+        ],
+        task_type='CAUSAL_LM',
+        type='LoraConfig'),
+    peft_path=None,
+    special_tokens=dict(pad_token='<|endoftext|>'),
+    tokenizer_cfg=dict(type='AutoTokenizer', use_fast=True),
+    use_peft=True)
+process_preds = dict(
+    do_plot=False, npz_file='obqa.npz', plot_cfg=dict(plot_grid_size=[
+        5,
+        5,
+    ]))
+tokenizer_run_cfg = dict(
+    max_length=300, padding=True, return_tensors='pt', truncation=True)
+train_cfg = dict(
+    bf16=True,
+    do_eval=True,
+    do_train=True,
+    eval_strategy='epoch',
+    learning_rate=5e-05,
+    logging_steps=20,
+    lr_scheduler_type='cosine',
+    max_steps=50,
+    per_device_eval_batch_size=4,
+    per_device_train_batch_size=4,
+    save_only_model=True,
+    save_strategy='epoch',
+    save_total_limit=1,
+    warmup_steps=20,
+    weight_decay=0.0)
+
+============================================================
+2026-04-03 20:44:39,542 - ib-edl - [92mINFO[0m: Set torch.backends.cuda.enable_flash_sdp and torch.backends.cuda.enable_mem_efficient_sdp to False.
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading checkpoint shards: 100%|██████████| 4/4 [00:00<00:00, 122.10it/s]
+2026-04-03 20:44:40,082 - ib-edl - [92mINFO[0m: Setting up PEFT.
+The tokenizer has new PAD/BOS/EOS tokens that differ from the model config and generation config. The model config and generation config were aligned accordingly, being updated with the tokenizer's values. Updated tokens: {'bos_token_id': None, 'pad_token_id': 151643}.
+  0%|          | 0/50 [00:00<?, ?it/s]Could not estimate the number of tokens of the input, floating-point operations will not be computed
+100%|██████████| 50/50 [00:20<00:00,  2.87it/s/dss/dsshome1/03/ra58yed2/miniforge3/envs/adl-asymmetric-lm-duos/lib/python3.12/site-packages/transformers/trainer.py:4380: UserWarning: mtime may not be reliable on this filesystem, falling back to numerical ordering
+  warnings.warn("mtime may not be reliable on this filesystem, falling back to numerical ordering")
+{'eval_loss': 0.0065771532244980335, 'eval_accuracy': 1.0, 'eval_ece': 0.0065555572509765625, 'eval_nll': 0.0065771532244980335, 'eval_runtime': 0.0647, 'eval_samples_per_second': 15.46, 'eval_steps_per_second': 15.46, 'epoch': 1.0}
+{'eval_loss': 0.005900583229959011, 'eval_accuracy': 1.0, 'eval_ece': 0.005883216857910156, 'eval_nll': 0.005900583229959011, 'eval_runtime': 0.0595, 'eval_samples_per_second': 16.811, 'eval_steps_per_second': 16.811, 'epoch': 2.0}
+{'eval_loss': 0.006321790162473917, 'eval_accuracy': 1.0, 'eval_ece': 0.006301820278167725, 'eval_nll': 0.006321790162473917, 'eval_runtime': 0.0592, 'eval_samples_per_second': 16.886, 'eval_steps_per_second': 16.886, 'epoch': 3.0}
+{'eval_loss': 0.005675037391483784, 'eval_accuracy': 1.0, 'eval_ece': 0.005658984184265137, 'eval_nll': 0.005675037391483784, 'eval_runtime': 0.0592, 'eval_samples_per_second': 16.893, 'eval_steps_per_second': 16.893, 'epoch': 4.0}
+{'eval_loss': 0.0055287545546889305, 'eval_accuracy': 1.0, 'eval_ece': 0.005513489246368408, 'eval_nll': 0.0055287545546889305, 'eval_runtime': 0.0642, 'eval_samples_per_second': 15.586, 'eval_steps_per_second': 15.586, 'epoch': 5.0}
+{'eval_loss': 0.004507618956267834, 'eval_accuracy': 1.0, 'eval_ece': 0.0044974684715271, 'eval_nll': 0.004507618956267834, 'eval_runtime': 0.0593, 'eval_samples_per_second': 16.856, 'eval_steps_per_second': 16.856, 'epoch': 6.0}
+{'loss': 0.4704, 'grad_norm': 9.037211418151855, 'learning_rate': 4.75e-05, 'epoch': 6.67}
+{'eval_loss': 0.0037531666457653046, 'eval_accuracy': 1.0, 'eval_ece': 0.0037461519241333008, 'eval_nll': 0.0037531666457653046, 'eval_runtime': 0.0595, 'eval_samples_per_second': 16.797, 'eval_steps_per_second': 16.797, 'epoch': 7.0}
+{'eval_loss': 0.002277996391057968, 'eval_accuracy': 1.0, 'eval_ece': 0.002275407314300537, 'eval_nll': 0.002277996391057968, 'eval_runtime': 0.0593, 'eval_samples_per_second': 16.86, 'eval_steps_per_second': 16.86, 'epoch': 8.0}
+{'eval_loss': 0.0016606362769380212, 'eval_accuracy': 1.0, 'eval_ece': 0.0016592741012573242, 'eval_nll': 0.0016606362769380212, 'eval_runtime': 0.0594, 'eval_samples_per_second': 16.831, 'eval_steps_per_second': 16.831, 'epoch': 9.0}
+{'eval_loss': 0.0009235645993612707, 'eval_accuracy': 1.0, 'eval_ece': 0.0009230375289916992, 'eval_nll': 0.0009234455064870417, 'eval_runtime': 0.0599, 'eval_samples_per_second': 16.694, 'eval_steps_per_second': 16.694, 'epoch': 10.0}
+{'eval_loss': 0.0005340342177078128, 'eval_accuracy': 1.0, 'eval_ece': 0.000533759593963623, 'eval_nll': 0.0005339150666259229, 'eval_runtime': 0.0592, 'eval_samples_per_second': 16.897, 'eval_steps_per_second': 16.897, 'epoch': 11.0}
+{'eval_loss': 0.0003303935518488288, 'eval_accuracy': 1.0, 'eval_ece': 0.00033020973205566406, 'eval_nll': 0.0003302744007669389, 'eval_runtime': 0.0597, 'eval_samples_per_second': 16.748, 'eval_steps_per_second': 16.748, 'epoch': 12.0}
+{'eval_loss': 0.00022706791060045362, 'eval_accuracy': 1.0, 'eval_ece': 0.0002270340919494629, 'eval_nll': 0.00022706791060045362, 'eval_runtime': 0.0591, 'eval_samples_per_second': 16.928, 'eval_steps_per_second': 16.928, 'epoch': 13.0}
+{'loss': 0.1131, 'grad_norm': 1.270412564277649, 'learning_rate': 1.4831583923104999e-05, 'epoch': 13.33}
+{'eval_loss': 0.00017081231635529548, 'eval_accuracy': 1.0, 'eval_ece': 0.00017082691192626953, 'eval_nll': 0.00017081231635529548, 'eval_runtime': 0.0606, 'eval_samples_per_second': 16.51, 'eval_steps_per_second': 16.51, 'epoch': 14.0}
+{'eval_loss': 0.00015746307326480746, 'eval_accuracy': 1.0, 'eval_ece': 0.0001575946807861328, 'eval_nll': 0.00015758226800244302, 'eval_runtime': 0.0594, 'eval_samples_per_second': 16.827, 'eval_steps_per_second': 16.827, 'epoch': 15.0}
+{'eval_loss': 0.00014780859055463225, 'eval_accuracy': 1.0, 'eval_ece': 0.00014781951904296875, 'eval_nll': 0.00014780859055463225, 'eval_runtime': 0.0598, 'eval_samples_per_second': 16.717, 'eval_steps_per_second': 16.717, 'epoch': 16.0}
+{'eval_loss': 0.00015245705435518175, 'eval_accuracy': 1.0, 'eval_ece': 0.00015246868133544922, 'eval_nll': 0.00015245705435518175, 'eval_runtime': 0.059, 'eval_samples_per_second': 16.962, 'eval_steps_per_second': 16.962, 'epoch': 16.67}
+100%|██████████| 50/50 [00:21<00:00,  2.34it/s]
+{'train_runtime': 21.3578, 'train_samples_per_second': 9.364, 'train_steps_per_second': 2.341, 'train_loss': 0.2348395851254463, 'epoch': 16.67}
+2026-04-03 20:45:19,505 - ib-edl - [92mINFO[0m: Fine-tuning for base model finished.
+100%|██████████| 1/1 [00:00<00:00, 571.74it/s]
+2026-04-03 20:45:19,567 - ib-edl - [92mINFO[0m: Validation metrics for base model: val_loss: 0.00015245705435518175
+2026-04-03 20:45:19,567 - ib-edl - [92mINFO[0m: Validation metrics for base model: val_accuracy: 1.0
+2026-04-03 20:45:19,568 - ib-edl - [92mINFO[0m: Validation metrics for base model: val_ece: 0.00015246868133544922
+2026-04-03 20:45:19,568 - ib-edl - [92mINFO[0m: Validation metrics for base model: val_nll: 0.00015245705435518175
+2026-04-03 20:45:19,568 - ib-edl - [92mINFO[0m: Validation metrics for base model: val_runtime: 0.0607
+2026-04-03 20:45:19,569 - ib-edl - [92mINFO[0m: Validation metrics for base model: val_samples_per_second: 16.478
+2026-04-03 20:45:19,569 - ib-edl - [92mINFO[0m: Validation metrics for base model: val_steps_per_second: 16.478
+2026-04-03 20:45:19,569 - ib-edl - [92mINFO[0m: Validation metrics for base model: epoch: 16.666666666666668
+100%|██████████| 1/1 [00:00<00:00, 20.63it/s]
+2026-04-03 20:45:19,682 - ib-edl - [92mINFO[0m: Test metrics for base model: test_loss: 0.4347068965435028
+2026-04-03 20:45:19,683 - ib-edl - [92mINFO[0m: Test metrics for base model: test_accuracy: 0.5
+2026-04-03 20:45:19,683 - ib-edl - [92mINFO[0m: Test metrics for base model: test_ece: 0.28963881731033325
+2026-04-03 20:45:19,684 - ib-edl - [92mINFO[0m: Test metrics for base model: test_nll: 0.4347068667411804
+2026-04-03 20:45:19,684 - ib-edl - [92mINFO[0m: Test metrics for base model: test_runtime: 0.1109
+2026-04-03 20:45:19,684 - ib-edl - [92mINFO[0m: Test metrics for base model: test_samples_per_second: 18.031
+2026-04-03 20:45:19,685 - ib-edl - [92mINFO[0m: Test metrics for base model: test_steps_per_second: 9.015
+2026-04-03 20:45:19,685 - ib-edl - [92mINFO[0m: Test metrics for base model: epoch: 16.666666666666668
+100%|██████████| 1/1 [00:00<00:00, 30.95it/s]
+100%|██████████| 1/1 [00:00<00:00, 613.02it/s]
+2026-04-03 20:45:19,849 - ib-edl - [92mINFO[0m: Start processing predictions.
+Seeds in the output file before update with seed 5: dict_keys(['1', '2', '3', '4'])
+
+Seeds in the output file after update with seed 5: dict_keys(['1', '2', '3', '4', '5'])
+2026-04-03 20:45:19,853 - ib-edl - [92mINFO[0m: Predictions with seed 5 saved to workdirs/ib_edl/obqa/qwen2_7b_qwen2_15b/base/val_preds/obqa.npz
+
+Seeds in the output file before update with seed 5: dict_keys(['1', '2', '3', '4'])
+
+Seeds in the output file after update with seed 5: dict_keys(['1', '2', '3', '4', '5'])
+2026-04-03 20:45:19,857 - ib-edl - [92mINFO[0m: Predictions with seed 5 saved to workdirs/ib_edl/obqa/qwen2_7b_qwen2_15b/base/test_preds/obqa.npz
+wandb: wandb.init() called while a run is active and reinit is set to 'default', so returning the previous run.
+2026-04-03 20:45:20,240 - ib-edl - [92mINFO[0m: Using sidekick config:
+============================================================
+data = dict(
+    test=dict(
+        add_space=True,
+        dataset_cfg=dict(split='test'),
+        subset_size=2,
+        type='OBQADataset'),
+    train=dict(
+        add_space=True,
+        dataset_cfg=dict(split='train'),
+        subset_size=10,
+        type='OBQADataset'),
+    val=dict(
+        add_space=True,
+        dataset_cfg=dict(split='validation'),
+        subset_size=1,
+        type='OBQADataset'))
+model = dict(
+    model_cfg=dict(torch_dtype='bfloat16', type='AutoModelForCausalLM'),
+    model_name_or_path='Qwen/Qwen2-1.5B',
+    peft_cfg=dict(
+        bias='lora_only',
+        inference_mode=False,
+        lora_alpha=16,
+        lora_dropout=0.1,
+        r=8,
+        target_modules=[
+            'q_proj',
+            'k_proj',
+            'v_proj',
+            'o_proj',
+        ],
+        task_type='CAUSAL_LM',
+        type='LoraConfig'),
+    peft_path=None,
+    special_tokens=dict(pad_token='<|endoftext|>'),
+    tokenizer_cfg=dict(type='AutoTokenizer', use_fast=True),
+    use_peft=True)
+process_preds = dict(
+    do_plot=False, npz_file='obqa.npz', plot_cfg=dict(plot_grid_size=[
+        5,
+        5,
+    ]))
+tokenizer_run_cfg = dict(
+    max_length=300, padding=True, return_tensors='pt', truncation=True)
+train_cfg = dict(
+    bf16=True,
+    do_eval=True,
+    do_train=True,
+    eval_strategy='epoch',
+    learning_rate=5e-05,
+    logging_steps=20,
+    lr_scheduler_type='cosine',
+    max_steps=50,
+    per_device_eval_batch_size=4,
+    per_device_train_batch_size=4,
+    save_only_model=True,
+    save_strategy='epoch',
+    save_total_limit=1,
+    warmup_steps=20,
+    weight_decay=0.0)
+
+============================================================
+2026-04-03 20:45:20,241 - ib-edl - [92mINFO[0m: Set torch.backends.cuda.enable_flash_sdp and torch.backends.cuda.enable_mem_efficient_sdp to False.
+2026-04-03 20:45:20,698 - ib-edl - [92mINFO[0m: Setting up PEFT.
+The tokenizer has new PAD/BOS/EOS tokens that differ from the model config and generation config. The model config and generation config were aligned accordingly, being updated with the tokenizer's values. Updated tokens: {'bos_token_id': None, 'pad_token_id': 151643}.
+A ConfigError was raised whilst setting the number of model parameters in Weights & Biases config.
+  0%|          | 0/50 [00:00<?, ?it/s]Could not estimate the number of tokens of the input, floating-point operations will not be computed
+100%|██████████| 50/50 [00:18<00:00,  2.83it/s/dss/dsshome1/03/ra58yed2/miniforge3/envs/adl-asymmetric-lm-duos/lib/python3.12/site-packages/transformers/trainer.py:4380: UserWarning: mtime may not be reliable on this filesystem, falling back to numerical ordering
+  warnings.warn("mtime may not be reliable on this filesystem, falling back to numerical ordering")
+
+{'eval_loss': 0.15789860486984253, 'eval_accuracy': 1.0, 'eval_ece': 0.14606362581253052, 'eval_nll': 0.15789860486984253, 'eval_runtime': 0.0601, 'eval_samples_per_second': 16.647, 'eval_steps_per_second': 16.647, 'epoch': 1.0}
+{'eval_loss': 0.1671883910894394, 'eval_accuracy': 1.0, 'eval_ece': 0.15395981073379517, 'eval_nll': 0.1671883910894394, 'eval_runtime': 0.0596, 'eval_samples_per_second': 16.791, 'eval_steps_per_second': 16.791, 'epoch': 2.0}
+{'eval_loss': 0.16514094173908234, 'eval_accuracy': 1.0, 'eval_ece': 0.1522257924079895, 'eval_nll': 0.16514094173908234, 'eval_runtime': 0.0587, 'eval_samples_per_second': 17.024, 'eval_steps_per_second': 17.024, 'epoch': 3.0}
+{'eval_loss': 0.15660250186920166, 'eval_accuracy': 1.0, 'eval_ece': 0.14495611190795898, 'eval_nll': 0.15660250186920166, 'eval_runtime': 0.0595, 'eval_samples_per_second': 16.81, 'eval_steps_per_second': 16.81, 'epoch': 4.0}
+{'eval_loss': 0.14709186553955078, 'eval_accuracy': 1.0, 'eval_ece': 0.13678550720214844, 'eval_nll': 0.1470920741558075, 'eval_runtime': 0.0592, 'eval_samples_per_second': 16.887, 'eval_steps_per_second': 16.887, 'epoch': 5.0}
+{'eval_loss': 0.17328466475009918, 'eval_accuracy': 1.0, 'eval_ece': 0.15910178422927856, 'eval_nll': 0.17328466475009918, 'eval_runtime': 0.0598, 'eval_samples_per_second': 16.713, 'eval_steps_per_second': 16.713, 'epoch': 6.0}
+{'loss': 1.4018, 'grad_norm': 27.0783748626709, 'learning_rate': 4.75e-05, 'epoch': 6.67}
+{'eval_loss': 0.17308907210826874, 'eval_accuracy': 1.0, 'eval_ece': 0.1589372754096985, 'eval_nll': 0.17308907210826874, 'eval_runtime': 0.0597, 'eval_samples_per_second': 16.757, 'eval_steps_per_second': 16.757, 'epoch': 7.0}
+{'eval_loss': 0.16356058418750763, 'eval_accuracy': 1.0, 'eval_ece': 0.15088492631912231, 'eval_nll': 0.16356058418750763, 'eval_runtime': 0.0592, 'eval_samples_per_second': 16.906, 'eval_steps_per_second': 16.906, 'epoch': 8.0}
+{'eval_loss': 0.17948706448078156, 'eval_accuracy': 1.0, 'eval_ece': 0.16430121660232544, 'eval_nll': 0.17948706448078156, 'eval_runtime': 0.0597, 'eval_samples_per_second': 16.762, 'eval_steps_per_second': 16.762, 'epoch': 9.0}
+{'eval_loss': 0.20852844417095184, 'eval_accuracy': 1.0, 'eval_ece': 0.18822211027145386, 'eval_nll': 0.2085285484790802, 'eval_runtime': 0.0593, 'eval_samples_per_second': 16.85, 'eval_steps_per_second': 16.85, 'epoch': 10.0}
+{'eval_loss': 0.2238987684249878, 'eval_accuracy': 1.0, 'eval_ece': 0.20060396194458008, 'eval_nll': 0.2238987684249878, 'eval_runtime': 0.0599, 'eval_samples_per_second': 16.701, 'eval_steps_per_second': 16.701, 'epoch': 11.0}
+{'eval_loss': 0.23601685464382172, 'eval_accuracy': 1.0, 'eval_ece': 0.21023261547088623, 'eval_nll': 0.23601685464382172, 'eval_runtime': 0.0593, 'eval_samples_per_second': 16.875, 'eval_steps_per_second': 16.875, 'epoch': 12.0}
+{'eval_loss': 0.23138585686683655, 'eval_accuracy': 1.0, 'eval_ece': 0.20656681060791016, 'eval_nll': 0.2313859462738037, 'eval_runtime': 0.0594, 'eval_samples_per_second': 16.826, 'eval_steps_per_second': 16.826, 'epoch': 13.0}
+{'loss': 0.8775, 'grad_norm': 6.731317520141602, 'learning_rate': 1.4831583923104999e-05, 'epoch': 13.33}
+{'eval_loss': 0.2110036015510559, 'eval_accuracy': 1.0, 'eval_ece': 0.19022893905639648, 'eval_nll': 0.21100370585918427, 'eval_runtime': 0.0597, 'eval_samples_per_second': 16.754, 'eval_steps_per_second': 16.754, 'epoch': 14.0}
+{'eval_loss': 0.22744831442832947, 'eval_accuracy': 1.0, 'eval_ece': 0.20343643426895142, 'eval_nll': 0.22744831442832947, 'eval_runtime': 0.0595, 'eval_samples_per_second': 16.819, 'eval_steps_per_second': 16.819, 'epoch': 15.0}
+{'eval_loss': 0.22956646978855133, 'eval_accuracy': 1.0, 'eval_ece': 0.2051219344139099, 'eval_nll': 0.2295665740966797, 'eval_runtime': 0.0597, 'eval_samples_per_second': 16.748, 'eval_steps_per_second': 16.748, 'epoch': 16.0}
+{'eval_loss': 0.23138585686683655, 'eval_accuracy': 1.0, 'eval_ece': 0.20656681060791016, 'eval_nll': 0.2313859462738037, 'eval_runtime': 0.0595, 'eval_samples_per_second': 16.801, 'eval_steps_per_second': 16.801, 'epoch': 16.67}
+100%|██████████| 50/50 [00:19<00:00,  2.62it/s]
+{'train_runtime': 19.0951, 'train_samples_per_second': 10.474, 'train_steps_per_second': 2.618, 'train_loss': 0.9761702632904052, 'epoch': 16.67}
+2026-04-03 20:45:48,700 - ib-edl - [92mINFO[0m: Fine-tuning for sidekick model finished.
+100%|██████████| 1/1 [00:00<00:00, 571.98it/s]
+2026-04-03 20:45:48,761 - ib-edl - [92mINFO[0m: Validation metrics for sidekick model: val_loss: 0.23138585686683655
+2026-04-03 20:45:48,762 - ib-edl - [92mINFO[0m: Validation metrics for sidekick model: val_accuracy: 1.0
+2026-04-03 20:45:48,762 - ib-edl - [92mINFO[0m: Validation metrics for sidekick model: val_ece: 0.20656681060791016
+2026-04-03 20:45:48,762 - ib-edl - [92mINFO[0m: Validation metrics for sidekick model: val_nll: 0.2313859462738037
+2026-04-03 20:45:48,762 - ib-edl - [92mINFO[0m: Validation metrics for sidekick model: val_runtime: 0.0597
+2026-04-03 20:45:48,762 - ib-edl - [92mINFO[0m: Validation metrics for sidekick model: val_samples_per_second: 16.745
+2026-04-03 20:45:48,762 - ib-edl - [92mINFO[0m: Validation metrics for sidekick model: val_steps_per_second: 16.745
+2026-04-03 20:45:48,763 - ib-edl - [92mINFO[0m: Validation metrics for sidekick model: epoch: 16.666666666666668
+100%|██████████| 1/1 [00:00<00:00, 72.61it/s]
+2026-04-03 20:45:48,840 - ib-edl - [92mINFO[0m: Test metrics for sidekick model: test_loss: 1.3517228364944458
+2026-04-03 20:45:48,841 - ib-edl - [92mINFO[0m: Test metrics for sidekick model: test_accuracy: 0.5
+2026-04-03 20:45:48,841 - ib-edl - [92mINFO[0m: Test metrics for sidekick model: test_ece: 0.35363829135894775
+2026-04-03 20:45:48,841 - ib-edl - [92mINFO[0m: Test metrics for sidekick model: test_nll: 1.3517227172851562
+2026-04-03 20:45:48,841 - ib-edl - [92mINFO[0m: Test metrics for sidekick model: test_runtime: 0.0761
+2026-04-03 20:45:48,841 - ib-edl - [92mINFO[0m: Test metrics for sidekick model: test_samples_per_second: 26.277
+2026-04-03 20:45:48,841 - ib-edl - [92mINFO[0m: Test metrics for sidekick model: test_steps_per_second: 13.138
+2026-04-03 20:45:48,841 - ib-edl - [92mINFO[0m: Test metrics for sidekick model: epoch: 16.666666666666668
+100%|██████████| 1/1 [00:00<00:00, 181.13it/s]
+100%|██████████| 1/1 [00:00<00:00, 563.45it/s]
+2026-04-03 20:45:48,978 - ib-edl - [92mINFO[0m: Start processing predictions.
+Seeds in the output file before update with seed 5: dict_keys(['1', '2', '3', '4'])
+
+Seeds in the output file after update with seed 5: dict_keys(['1', '2', '3', '4', '5'])
+2026-04-03 20:45:48,982 - ib-edl - [92mINFO[0m: Predictions with seed 5 saved to workdirs/ib_edl/obqa/qwen2_7b_qwen2_15b/sidekick/val_preds/obqa.npz
+
+Seeds in the output file before update with seed 5: dict_keys(['1', '2', '3', '4'])
+
+Seeds in the output file after update with seed 5: dict_keys(['1', '2', '3', '4', '5'])
+2026-04-03 20:45:48,985 - ib-edl - [92mINFO[0m: Predictions with seed 5 saved to workdirs/ib_edl/obqa/qwen2_7b_qwen2_15b/sidekick/test_preds/obqa.npz
+
+iter scales -> base: 0.9985
+iter scales -> base: 0.8712
+iter scales -> base: 0.8135
+iter scales -> base: 0.7519
+iter scales -> base: 0.7039
+iter scales -> base: 0.6614
+iter scales -> base: 0.6267
+iter scales -> base: 0.5897
+iter scales -> base: 0.5763
+iter scales -> base: 0.0000
+Total number of observation for model base is 1
+Sum of probs for model base is 1.0000001192092896
+Total number of observation for model base is 2
+Sum of probs for model base is 2.000000238418579
+Total number of observation for model sidekick is 1
+Sum of probs for model sidekick is 1.0
+Total number of observation for model sidekick is 2
+Sum of probs for model sidekick is 2.0
+iter scales -> base: 1.0002, sidekick: 1.0000
+iter scales -> base: 1.0144, sidekick: 1.0028
+iter scales -> base: 1.1078, sidekick: 1.0213
+iter scales -> base: 1.1680, sidekick: 1.0324
+iter scales -> base: 1.2417, sidekick: 1.0451
+iter scales -> base: 1.3156, sidekick: 1.0645
+Optimized temperature-weighted duo -> base_scale: 1.3156, sidekick_scale: 1.0645, base_weight: 0.5527, sidekick_weight: 0.4473, base_temp: 0.7601, sidekick_temp: 0.9394
+Total number of observation for model base is 1
+Sum of probs for model base is 0.9999999403953552
+Total number of observation for model sidekick is 1
+Sum of probs for model sidekick is 0.9999997615814209
+Total number of observation for model duo is 1
+Sum of probs for model duo is 1.0000008344650269
+Total number of observation for model base is 2
+Sum of probs for model base is 2.000000476837158
+Total number of observation for model sidekick is 2
+Sum of probs for model sidekick is 2.000000238418579
+Total number of observation for model duo is 2
+Sum of probs for model duo is 2.00000262260437
