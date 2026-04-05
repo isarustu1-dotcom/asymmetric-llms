@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH -p lrz-hgx-a100-80x4
-#SBATCH --qos=gpu
+#SBATCH -p mcml-dgx-a100-40x8
+#SBATCH --qos=mcml
 #SBATCH --ntasks=1
 #SBATCH --gres=gpu:1
 #SBATCH -t 00:20:00
